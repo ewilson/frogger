@@ -3,6 +3,7 @@ import arcade
 SCREEN_HEIGHT = 560
 SCREEN_WIDTH = 800
 ROAD_SECTION_HEIGHT = SCREEN_HEIGHT / 8
+score = 0
 
 
 class Frog(arcade.Sprite):
@@ -11,8 +12,12 @@ class Frog(arcade.Sprite):
         super().__init__(center_x=x_pos, center_y=y_pos)
         self.textures.append(arcade.load_texture("assets/frog/frog-animation/frog3.png", scale=0.4))
         self.set_texture(0)
+        self.jump_sound = arcade.load_sound("assets/sounds/jump.mp3")
+        self.success_sound = arcade.load_sound("assets/sounds/success.mp3")
+        self.progress = 1
 
     def jump(self, direction):
+        arcade.play_sound(self.jump_sound)
         jump_distance = ROAD_SECTION_HEIGHT / 2
         if direction == arcade.key.UP:
             if self.center_y < jump_distance * 13:
@@ -30,6 +35,16 @@ class Frog(arcade.Sprite):
             if self.center_x > 2 * jump_distance:
                 self.angle = 90
                 self.center_x -= jump_distance * 1.2
+        self._update_score()
+
+    def _update_score(self):
+        if self.center_y > ROAD_SECTION_HEIGHT * self.progress:
+            global score
+            self.progress += 1
+            score += 10
+            if self.progress == 7:
+                arcade.play_sound(self.success_sound)
+                score += 40
 
 
 class Frogger(arcade.Window):
@@ -69,7 +84,8 @@ class Frogger(arcade.Window):
 
     def _draw_score_area(self):
         arcade.draw_lrtb_rectangle_filled(0, SCREEN_WIDTH, SCREEN_HEIGHT, 7 * ROAD_SECTION_HEIGHT, arcade.color.BLACK)
-        arcade.draw_text("Score: ", 10, SCREEN_HEIGHT - 40, arcade.color.WHITE, 20)
+        global score
+        arcade.draw_text("Score: " + str(score), 10, SCREEN_HEIGHT - 40, arcade.color.WHITE, 20)
 
 
 window = Frogger()
