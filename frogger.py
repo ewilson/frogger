@@ -6,6 +6,21 @@ ROAD_SECTION_HEIGHT = SCREEN_HEIGHT / 8
 score = 0
 
 
+class Car(arcade.Sprite):
+
+    def __init__(self, image_file, x_pos, y_pos, angle, speed):
+        super().__init__(image_file, 1, center_x=x_pos, center_y=y_pos)
+        self.speed = speed
+        self.angle = angle
+
+    def update(self):
+        self.center_x += self.speed
+        if self.right < 0:
+            self.left = SCREEN_WIDTH
+        if self.left > SCREEN_WIDTH:
+            self.right = 0
+
+
 class Frog(arcade.Sprite):
 
     def __init__(self, x_pos, y_pos):
@@ -53,15 +68,22 @@ class Frogger(arcade.Window):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Frogger")
         self.set_mouse_visible(False)
         arcade.set_background_color(arcade.color.PURPLE)
+        self.cars = arcade.SpriteList()
+        self.car_speed = 1
 
     def setup(self):
         self.frog = Frog(SCREEN_WIDTH/2, ROAD_SECTION_HEIGHT/2)
+        self._car_setup()
 
     def on_draw(self):
         arcade.start_render()
         self._build_road()
         self._draw_score_area()
         self.frog.draw()
+        self.cars.draw()
+
+    def on_update(self, delta_time):
+        self.cars.update()
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ESCAPE:
@@ -81,6 +103,31 @@ class Frogger(arcade.Window):
         _stripe_road(ROAD_SECTION_HEIGHT * 3)
         _stripe_road(ROAD_SECTION_HEIGHT * 4, 50)
         _stripe_road(ROAD_SECTION_HEIGHT * 5)
+
+    def _car_setup(self):
+        # Row one cars
+        first_lane = ROAD_SECTION_HEIGHT * 1.5
+        self.cars.append(Car("assets/cars/car_red_small_4.png", 100, first_lane, -90, 2 * self.car_speed))
+        self.cars.append(Car("assets/cars/car_red_small_4.png", 250, first_lane, -90, 2 * self.car_speed))
+        self.cars.append(Car("assets/cars/car_red_small_4.png", 700, first_lane, -90, 2 * self.car_speed))
+        # Row two cars
+        second_lane = ROAD_SECTION_HEIGHT * 2.5
+        self.cars.append(Car("assets/cars/car_yellow_small_1.png", 50, second_lane, 90, -5 * self.car_speed))
+        # Row three cars
+        third_lane = ROAD_SECTION_HEIGHT * 3.5
+        self.cars.append(Car("assets/cars/car_blue_small_2.png", 50, third_lane, -90, 3 * self.car_speed))
+        self.cars.append(Car("assets/cars/car_blue_small_2.png", 160, third_lane, -90, 3 * self.car_speed))
+        self.cars.append(Car("assets/cars/car_blue_small_2.png", 500, third_lane, -90, 3 * self.car_speed))
+        self.cars.append(Car("assets/cars/car_blue_small_2.png", 610, third_lane, -90, 3 * self.car_speed))
+        # Row four cars
+        fourth_lane = ROAD_SECTION_HEIGHT * 4.5
+        self.cars.append(Car("assets/cars/car_red_small_3.png", 600, fourth_lane, 90, -4 * self.car_speed))
+        self.cars.append(Car("assets/cars/car_red_small_3.png", 200, fourth_lane, 90, -4 * self.car_speed))
+        # Row five cars
+        fifth_lane = ROAD_SECTION_HEIGHT * 5.5
+        self.cars.append(Car("assets/cars/car_yellow_small_5.png", 0, fifth_lane, -90, 4 * self.car_speed))
+        self.cars.append(Car("assets/cars/car_yellow_small_5.png", 150, fifth_lane, -90, 4 * self.car_speed))
+        self.cars.append(Car("assets/cars/car_yellow_small_5.png", 500, fifth_lane, -90, 4 * self.car_speed))
 
     def _draw_score_area(self):
         arcade.draw_lrtb_rectangle_filled(0, SCREEN_WIDTH, SCREEN_HEIGHT, 7 * ROAD_SECTION_HEIGHT, arcade.color.BLACK)
