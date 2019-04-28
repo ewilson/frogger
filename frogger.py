@@ -5,7 +5,7 @@ SCREEN_WIDTH = 800
 ROAD_SECTION_HEIGHT = SCREEN_HEIGHT / 8
 
 score = 0
-
+level = 0
 
 class Car(arcade.Sprite):
 
@@ -15,7 +15,7 @@ class Car(arcade.Sprite):
         self.angle = angle
 
     def update(self):
-        self.center_x += self.speed
+        self.center_x += self.speed * (1 + level / 5)
         if self.right < 0:
             self.left = SCREEN_WIDTH
         if self.left > SCREEN_WIDTH:
@@ -71,12 +71,14 @@ class Frog(arcade.Sprite):
 
     def _update_score(self):
         if self.center_y > ROAD_SECTION_HEIGHT * self.progress:
-            global score
+            global score, level
             self.progress += 1
             score += 10
             if self.progress == 7:
                 arcade.play_sound(self.success_sound)
                 score += 40
+                self.to_initial_position()
+                level += 1
 
     def kill(self):
         arcade.play_sound(self.lose_life_sound)
