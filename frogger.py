@@ -3,6 +3,7 @@ import arcade
 SCREEN_HEIGHT = 560
 SCREEN_WIDTH = 800
 ROAD_SECTION_HEIGHT = SCREEN_HEIGHT / 8
+
 score = 0
 
 
@@ -28,6 +29,7 @@ class Frog(arcade.Sprite):
         self.textures.append(arcade.load_texture("assets/frog/frog-animation/frog3.png", scale=0.4))
         self.set_texture(0)
         self.jump_sound = arcade.load_sound("assets/sounds/jump.mp3")
+        self.lose_life_sound = arcade.load_sound("assets/sounds/lose-life.mp3")
         self.success_sound = arcade.load_sound("assets/sounds/success.mp3")
         self.progress = 1
 
@@ -61,29 +63,38 @@ class Frog(arcade.Sprite):
                 arcade.play_sound(self.success_sound)
                 score += 40
 
+    def kill(self):
+        arcade.play_sound(self.lose_life_sound)
+        super().kill()
+
 
 class Frogger(arcade.Window):
 
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Frogger")
+
         self.set_mouse_visible(False)
         arcade.set_background_color(arcade.color.PURPLE)
         self.cars = arcade.SpriteList()
+        self.frogs = arcade.SpriteList()
         self.car_speed = 1
 
     def setup(self):
-        self.frog = Frog(SCREEN_WIDTH/2, ROAD_SECTION_HEIGHT/2)
+        self.frogs.append(Frog(SCREEN_WIDTH/2, ROAD_SECTION_HEIGHT/2))
+        self.frog = self.frogs[0]
         self._car_setup()
 
     def on_draw(self):
         arcade.start_render()
         self._build_road()
         self._draw_score_area()
-        self.frog.draw()
         self.cars.draw()
+        self.frogs.draw()
 
     def on_update(self, delta_time):
         self.cars.update()
+        if self.frogs and arcade.check_for_collision_with_list(self.frog, self.cars):
+            self.frog.kill()
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ESCAPE:
