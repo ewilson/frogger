@@ -26,12 +26,17 @@ class Frog(arcade.Sprite):
 
     def __init__(self, x_pos, y_pos):
         super().__init__(center_x=x_pos, center_y=y_pos)
-        self.textures.append(arcade.load_texture("assets/frog/frog-animation/frog3.png", scale=0.4))
-        self.set_texture(0)
+        self._build_textures()
         self.jump_sound = arcade.load_sound("assets/sounds/jump.mp3")
         self.lose_life_sound = arcade.load_sound("assets/sounds/lose-life.mp3")
         self.success_sound = arcade.load_sound("assets/sounds/success.mp3")
         self.progress = 1
+
+    def _build_textures(self):
+        self.textures.append(arcade.load_texture("assets/frog/frog-animation/frog1.png", scale=0.3))
+        self.textures.append(arcade.load_texture("assets/frog/frog-animation/frog2.png", scale=0.4))
+        self.textures.append(arcade.load_texture("assets/frog/frog-animation/frog3.png", scale=0.4))
+        self.set_texture(0)
 
     def jump(self, direction):
         arcade.play_sound(self.jump_sound)
@@ -67,6 +72,11 @@ class Frog(arcade.Sprite):
         arcade.play_sound(self.lose_life_sound)
         super().kill()
 
+    def to_initial_position(self):
+        self.center_x = SCREEN_WIDTH/2
+        self.center_y = ROAD_SECTION_HEIGHT/2
+        self.set_texture(2)
+        self.progress = 0
 
 class Frogger(arcade.Window):
 
@@ -78,10 +88,15 @@ class Frogger(arcade.Window):
         self.cars = arcade.SpriteList()
         self.frogs = arcade.SpriteList()
         self.car_speed = 1
+        self.game_over = 0
+        self.game_over_sound = arcade.load_sound("assets/sounds/game-over.mp3")
 
     def setup(self):
         self.frogs.append(Frog(SCREEN_WIDTH/2, ROAD_SECTION_HEIGHT/2))
+        self.frogs.append(Frog(SCREEN_WIDTH - 100, ROAD_SECTION_HEIGHT * 7.5))
+        self.frogs.append(Frog(SCREEN_WIDTH - 50, ROAD_SECTION_HEIGHT * 7.5))
         self.frog = self.frogs[0]
+        self.frog.to_initial_position()
         self._car_setup()
 
     def on_draw(self):
@@ -92,9 +107,25 @@ class Frogger(arcade.Window):
         self.frogs.draw()
 
     def on_update(self, delta_time):
+        if self.game_over:
+            if self.game_over == 1:
+                arcade.play_sound(self.game_over_sound)
+                self.game_over = 2
+            return
         self.cars.update()
-        if self.frogs and arcade.check_for_collision_with_list(self.frog, self.cars):
+        self.frog.update()
+        if arcade.check_for_collision_with_list(self.frog, self.cars):
+            self._handle_crash()
+
+    def _handle_crash(self):
+        last_one = len(self.frogs) == 1
+        if last_one:
+            self.frogs.pop()
+            self.game_over = 1
+        else:
             self.frog.kill()
+            self.frog = self.frogs[0]
+            self.frog.to_initial_position()
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ESCAPE:
