@@ -31,6 +31,7 @@ class Frog(arcade.Sprite):
         self.lose_life_sound = arcade.load_sound("assets/sounds/lose-life.mp3")
         self.success_sound = arcade.load_sound("assets/sounds/success.mp3")
         self.progress = 1
+        self.respawning = 0
 
     def _build_textures(self):
         self.textures.append(arcade.load_texture("assets/frog/frog-animation/frog1.png", scale=0.3))
@@ -38,7 +39,16 @@ class Frog(arcade.Sprite):
         self.textures.append(arcade.load_texture("assets/frog/frog-animation/frog3.png", scale=0.4))
         self.set_texture(0)
 
+    def update(self):
+        if self.respawning > 1:
+            self.respawning -= 1
+        elif self.respawning == 1:
+            self.respawning -= 1
+            self.set_texture(2)
+
     def jump(self, direction):
+        if self.respawning:
+            return
         arcade.play_sound(self.jump_sound)
         jump_distance = ROAD_SECTION_HEIGHT / 2
         if direction == arcade.key.UP:
@@ -75,7 +85,8 @@ class Frog(arcade.Sprite):
     def to_initial_position(self):
         self.center_x = SCREEN_WIDTH/2
         self.center_y = ROAD_SECTION_HEIGHT/2
-        self.set_texture(2)
+        self.set_texture(1)
+        self.respawning = 50
         self.progress = 0
 
 class Frogger(arcade.Window):
